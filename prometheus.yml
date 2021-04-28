@@ -1,0 +1,72 @@
+# my global config
+global:
+  scrape_interval: 1m # Set the scrape interval to every 15 seconds. Default is every 1 minute.
+  evaluation_interval: 1m # Evaluate rules every 15 seconds. The default is every 1 minute.
+  # scrape_timeout is set to the global default (10s).
+
+# Alertmanager configuration
+alerting:
+  alertmanagers:
+    - static_configs:
+        #- targets:
+        # - alertmanager:9093
+        # -localhost:9093
+        - targets: ["localhost:9093"]
+
+# Load rules once and periodically evaluate them according to the global 'evaluation_interval'.
+rule_files:
+  # - "first_rules.yml"
+  # - "second_rules.yml"
+  - "rules.yml"
+
+# A scrape configuration containing exactly one endpoint to scrape:
+# Here it's Prometheus itself.
+scrape_configs:
+  - job_name: "SV-Resources-Linux"
+    static_configs:
+      - targets: ["localhost:9100"]
+      - targets: ["Target IP or Hostname:9100"]
+
+  - job_name: "My-SV-Resources"
+    static_configs:
+      - targets: ["[Target IP or Hostname]:9182"]
+
+  - job_name: "SV-Resources-Windows"
+    static_configs:
+      - targets: ["[Target IP or Hostname]:9182"]
+      - targets: ["[Target IP or Hostname]:9182"]
+
+  # [icmp] モジュールを使用する場合
+  # 任意の [job_name]
+  - job_name: "SV-icmp"
+    metrics_path: /probe
+    params:
+      module: [icmp]
+    static_configs:
+      - targets:
+          # 対象ノードのホスト名 または IP アドレス
+          - [[Target IP or Hostname]]
+          - [[Target IP or Hostname]]
+    relabel_configs:
+      - source_labels: [__address__]
+        target_label: __param_target
+      - source_labels: [__param_target]
+        target_label: instance
+      - target_label: __address__
+        # Blackbox exporter ホスト:ポート
+        replacement: 127.0.0.1:9115
+
+  - job_name: "SV-http"
+    metrics_path: /probe
+    params:
+      module: [http_2xx]
+    static_configs:
+      - targets:
+          - http://[[Target IP or Hostname]]
+    relabel_configs:
+      - source_labels: [__address__]
+        target_label: __param_target
+      - source_labels: [__param_target]
+        target_label: instance
+      - target_label: __address__
+        replacement: 127.0.0.1:9115

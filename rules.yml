@@ -1,0 +1,26 @@
+groups:
+    - name: 01-SV-icmp
+    rules:
+    - alert: EndpointDown-SV-icmp
+      expr: probe_success{job='SV-icmp'} == 0
+      for: 5m
+      labels:
+          job_name: SV-icmp
+
+  - name: 02-SV-http
+    rules:
+    - alert: HTTPDown-SV-http
+      expr: probe_success{job='SV-http'} == 0
+      for: 30s
+      labels:
+          job_name: SV-http
+
+  - name: 03-SQLServer-Service
+    rules:
+    - alert: SQLServer-ServiceDown
+      expr: wmi_service_state{job='SV-Resources',name ='mssql$sqlexpress',state='running'} == 0
+      for: 5m
+      labels:
+          job_name: SV-Resources
+
+

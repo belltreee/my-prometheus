@@ -1,0 +1,32 @@
+global:
+  resolve_timeout: 5m
+  smtp_from: "prometheus@example.net"
+  smtp_smarthost: "localhost:25"
+  smtp_require_tls: false
+
+route:
+  group_by: ["alertname"] #グルーピングするラベルを指定する
+  group_wait: 10s #アラートを受信してから送信を行うまでの待ち時間を指定する
+  group_interval: 10s #アラートの送信後、同一のグループに属するアラートを再び送信できるようにするまでの時間を指定する
+  repeat_interval: 1h #アラートを送信後、まったく同じアラートを再び送信できるようにするまでの時間を指定する
+  receiver: "receiver01"
+  routes:
+    - receiver: "receiver02"
+      match:
+        job_name: [job Name]
+
+receivers:
+  - name: "receiver01"
+    email_configs:
+      - to: [Destination email address]
+
+  - name: "receiver02"
+    email_configs:
+      - to: [Destination email address]
+
+inhibit_rules:
+  - source_match:
+      severity: "critical"
+    target_match:
+      severity: "warning"
+    equal: ["alertname", "dev", "instance"]
